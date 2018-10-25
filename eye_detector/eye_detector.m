@@ -1,4 +1,6 @@
 cam=webcam();  
+clear all   
+clf('reset');
 
 detector = vision.CascadeObjectDetector(); 
 
