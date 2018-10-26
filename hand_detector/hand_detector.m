@@ -1,12 +1,28 @@
 clear;
-img23 = imread('index.jpeg');
+vid = videoinput('linuxvideo',1);
+%preview(vid);
+figure(1);
+set(vid,'ReturnedColorspace','rgb')
+pause(2);
+img1 = getsnapshot(vid);
+subplot(2,2,1);
+imshow(img1);
+title('Background image');
+pause(2);
+img2 = getsnapshot(vid);
+subplot(2,2,2);
+imshow(img2);
+title('hand gesture');
+img3 = img2-img1;
+
+% img23 = imread('index.jpeg');
 %img21 = imresize(img21,[512,512]);
-i_ycbcr = rgb2ycbcr(img23);
+i_ycbcr = rgb2ycbcr(img3);
     cb = i_ycbcr(:,:,2);   %%% threshold for 95 - 120
     cr = i_ycbcr(:,:,3);   %%%% threshold value 135 - 155
     [m,n] = size(cr);
     subplot(2,2,1);
-    imshow(img23);
+    imshow(img3);
     img2 = zeros(m,n);
 for i=1:m
     for j=1:n
