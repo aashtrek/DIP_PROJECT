@@ -1,21 +1,21 @@
 clear;
-vid = videoinput('linuxvideo',1);
-%preview(vid);
-figure(1);
-set(vid,'ReturnedColorspace','rgb')
-pause(2);
-img1 = getsnapshot(vid);
-subplot(2,2,1);
-imshow(img1);
-title('Background image');
-pause(2);
-img2 = getsnapshot(vid);
-subplot(2,2,2);
-imshow(img2);
-title('hand gesture');
-img3 = img2-img1;
+% vid = videoinput('linuxvideo',1);
+% %preview(vid);
+% figure(1);
+% set(vid,'ReturnedColorspace','rgb')
+% pause(2);
+% img1 = getsnapshot(vid);
+% subplot(2,2,1);
+% imshow(img1);
+% title('Background image');
+% pause(2);
+% img2 = getsnapshot(vid);
+% subplot(2,2,2);
+% imshow(img2);
+% title('hand gesture');
+% img3 = img2-img1;
 
-% img23 = imread('index.jpeg');
+img3 = imread('index.jpeg');
 %img21 = imresize(img21,[512,512]);
 i_ycbcr = rgb2ycbcr(img3);
     cb = i_ycbcr(:,:,2);   %%% threshold for 95 - 120
@@ -65,3 +65,14 @@ if o1~=0 && o2~=0
     disp('Adjust your hand');
     
 end
+
+% Cx = Mx/M;
+% Cy = My/M;
+% p=0;
+% count=0;
+% count2=0;
+% thumb=0;
+% n1 = round(thisBB(1));
+% n2 = n1+round(thisBB(3))-1;
+% m1 = round(thisBB(2));
+% m2 = m1+round(thisBB(4))-1;
