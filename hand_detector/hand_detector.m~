@@ -41,19 +41,23 @@ clear;
 %     thisBB = prcounterties(1).BoundingBox;
 %     rectangle('Position',[thisBB(1),thisBB(2),thisBB(3),thisBB(4)],'EdgeColor','r','LineWidth',1);
 % end
-%   Input recorded video
-vid= VideoReader('video.mp4');
-    v = read(vid,[1 Inf]);
-    [m,n,r,frames] = size(v);
-    fm =1;
+%%   Input recorded video
+ vid= VideoReader('video.mp4');
+ v = read(vid,[1 Inf]);
+ [m,n,r,frames] = size(v);
+ fm =1;
+ 
+%% segmentation 
 while fm<frames
     filename = read(vid,fm);
+    %Read the image, and capture the dimensions
     img_orig = uint8(filename);
     height = size(img_orig,1);
     width = size(img_orig,2);
+  
     out = img_orig;
-    bin = zeros(height,width);
-    img = grayworld(img_orig);           %Apply Grayworld Algorithm for illumination compensation
+    img2 = zeros(height,width);
+    img = grayworld(img_orig);               %%  Grayworld Algorithm for illumination compensation   
     img_ycbcr = rgb2ycbcr(img);
     Cb = img_ycbcr(:,:,2);
     Cr = img_ycbcr(:,:,3);
@@ -61,154 +65,109 @@ while fm<frames
     numind = size(r,1);
     for i=1:numind
         out(r(i),c(i),:) = [0 0 255];
-        bin(r(i),c(i)) = 1;
+        img2(r(i),c(i)) = 1;
     end
-    bin = bwareaopen(bin,100);
-    bin = imfill(bin,'holes');
+    img2 = bwareaopen(img2,100);
+    img2 = imfill(img2,'holes');
     subplot(2,2,1)
     imshow(img_orig);
     subplot(2,2,2)
     imshow(out);
     subplot(2,2,3)
-    imshow(bin);
-img = bin;
-[m,n] = size(img);
-properties = regionprops(img,'BoundingBox');  %% return a vector [left,top,width,height] of box
-for k=1:length(properties)
-    thisBB = properties(1).BoundingBox;
-    rectangle('Position',[thisBB(1),thisBB(2),thisBB(3),thisBB(4)],'EdgeColor','r','LineWidth',1);
-end
-
-% o1 = 0; o2 = 0; 
-% for j=1:n                            %%%% vertical image
-%     if img(m,j)==1
-%         o1 = o1+1;
-%     end
-% end
-% 
-% if o1==0                                %%%%% horizonatal image                            
-%     for i=1:m 
-%         if img(i,1)==1
-%             o2 = o2+1;
-%         end
-%     end
-% end
-% 
-% if o2==0 && o1==0
-%     img = flip(img,2);
-%     o1 = 50;
-% end
-% 
-% if o1~=0 && o2~=0
-%     disp('Adjust your hand');
-%     
-% end
-img1 = edge(img,'canny');
-%edges = bwboundaries(img);
-subplot(2,2,3)
-imshow(img1);
-% 
-M = 0;
-Mx = 0;
-My = 0;
-for i=1:m
-    for j=1:n
-        M = img(i,j)+M;
-        Mx = i*img(i,j)+Mx;
-        My = j*img(i,j)+My;
+    imshow(img2);
+    [m,n] = size(img2);
+    prcounterties = regionprcounts(img,'BoundingBox');  %% return a vector [left,tcount,width,height] of box
+    for k=1:length(prcounterties)
+        thisBB = prcounterties(1).BoundingBox;
+        rectangle('Position',[thisBB(1),thisBB(2),thisBB(3),thisBB(4)],'EdgeColor','r','LineWidth',1);
     end
-end
-Cx = Mx/M;
-Cy = My/M;
-p=0;
-count=0;
-count2=0;
-thumb=0;
-n1 = round(thisBB(1));
-n2 = n1+round(thisBB(3))-1;
-m1 = round(thisBB(2));
-m2 = m1+round(thisBB(4))-1;
 
+    o1 = 0; o2 = 0; 
+    for j=1:n                            %%%% vertical image
+        if img2(m,j)==1
+            o1 = o1+1;
+        end
+    end                           
+    for i=1:m                       %%%%% horizonatal image 
+        if img2(i,1)==1
+            o2 = o2+1;
+        end
+    end
+    if o2==0 && o1==0
+        img2 = flip(img2,2);
+        o2 = 50;
+    end
 
-f1=0;
-%count=0;
-ti = 5/180*pi;
-    phi=0;
-    radius = Cx-m1;
-    img = imresize(img,[m,round(Cy)+radius+10]);
-    radius = radius*0.75;
-    i=1;
-while phi<pi
-    x = round(radius*cos(phi)+Cy);
-    y = round(-radius*sin(phi)+Cx);
-    if x<=0 || y<=0
-        break;
-    end
-    if img(y,x)==1 && f1==0
-        count(i)=1;
-        %angle(i)=phi;
-        i=i+1;
-        f1=1;
-    elseif img(y,x)==0 && f1==1
-        f1=0;
-    end
-    phi=phi+ti;
-end
-op=sum(count);
- subplot(2,2,4);
-if op==1
-    imshow('1.png');
-elseif op==2
-    
-        imshow('2.jpeg');
-elseif op==3
-    
-    imshow('3.png');
-elseif op==4
-    
-    imshow('4.png');
-elseif op==5
-    
-    imshow('5.jpeg');
-end
-% elseif o1==0
-%     i=1;
-%     radius = n2-Cy;
-%     img = imresize(img,[round(Cx)+radius+10,round(Cy)+radius+10]);
-%     radius = 0.7*radius;
-%     phi=-pi/2;
-%     while phi<1.3*pi/2
-%         x = round(radius*cos(phi)+Cy);
-%         y = round(Cx-radius*sin(phi));
-%          if x<0 || y<0
-%             break;
-%         end
-%         if img(y,x)==1 && f1==0
-%             count(i)=1;
-%             i=i+1;
-%             f1=1;
-%         elseif img(y,x)==0 && f1==1
-%             f1=0;
-%         end
-%         phi=phi+ti;
+%     if o1~=0 && o2~=0
+%         disp('Adjust your hand');
+%         exit;
 %     end
-%     op=sum(count);
-%  subplot(2,2,4);
-% if op==1
-%     imshow('a.png');
-% elseif op==2
-%     imshow('b.png');
-% elseif op==3
-%     imshow('c.png');
-% elseif op==4
-%     imshow('d.png');
-% elseif op==5
-%     imshow('e.png');
-% end
-   pause(2);
-   fm=fm+50; 
-end 
+%% feature extraction
+    Mx=0;My=0;M=0;
 
+    for i=1:m
+        for j=1:n
+            if img2(i,j)==1
+                Mx = Mx + j;
+                My = My +i;
+                M=M+1;
+            end
+        end
+    end
+        
+    Cx = Mx/M;
+    Cy = My/M;
+    p=0;
+    count=0;
+    count2=0;
+    thumb=0;
+    n1 = round(thisBB(1));
+    n2 = n1+round(thisBB(3))-1;
+    m1 = round(thisBB(2));
+    m2 = m1+round(thisBB(4))-1;
+    
+    f1=0;
+    %count=0;
+    ti = 5/180*pi;
+
+    %if o2==0
+        phi=0;
+        radius = Cx-m1;
+        img2 = imresize(img2,[m,round(Cy)+radius+10]);
+        radius = radius*0.70;
+        i=1;
+        while phi<pi
+            x = round(radius*cos(phi)+Cy);
+            y = round(-radius*sin(phi)+Cx);
+            if x<0 || y<0
+                break;
+            end
+            if img2(y,x)==1 && f1==0
+                count=1+count;
+                %angle(i)=phi;
+                i=i+1;
+                f1=1;
+            elseif img2(y,x)==0 && f1==1
+                f1=0;
+            end
+            phi=phi+ti;
+        end
+        subplot(2,2,4);
+        if count==1
+            imshow('1.png');
+        elseif count==2
+            imshow('2.jpeg');
+        elseif count==3
+            imshow('3.png');
+        elseif count==4
+            imshow('4.png');
+        elseif count==5
+            imshow('5.jpeg');
+        end
+    %end
+    fm=fm+50;
+    pause(2);
+end
 
 % if o2==0  %% vertical image
 %     for j=n1:n2
